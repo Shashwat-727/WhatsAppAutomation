@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request
+from fastapi.responses import PlainTextResponse
 import requests
 import os
 from pymongo import MongoClient
@@ -25,10 +26,16 @@ collection = db["payments"]
 # Webhook verification (GET)
 # -------------------------------
 @app.get("/webhook")
-def verify(hub_mode: str = None, hub_challenge: str = None, hub_verify_token: str = None):
-    if hub_verify_token == VERIFY_TOKEN:
-        return int(hub_challenge)
-    return "Verification failed"
+def webhook_verify(request: Request):
+    params = request.query_params
+
+    hub_verify_token = params.get("hub.verify_token")
+    hub_challenge = params.get("hub.challenge")
+
+    if hub_verify_token == VERIFY_TOKEN and hub_challenge:
+        return PlainTextResponse(content=hub_challenge)
+
+    return PlainTextResponse(content="Verification failed", status_code=403)
 
 # -------------------------------
 # Receive messages (POST)
