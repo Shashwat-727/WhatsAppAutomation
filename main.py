@@ -25,6 +25,12 @@ collection = db["payments"]
 # -------------------------------
 # Webhook verification (GET)
 # -------------------------------
+@app.get("/")
+def health_check():
+    return {"status": "ok"}
+
+
+
 @app.get("/webhook")
 def webhook_verify(request: Request):
     params = request.query_params
